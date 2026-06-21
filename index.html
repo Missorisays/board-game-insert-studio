@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Game Insert Studio</title>
+    <!-- We load Tailwind and React directly from the web so you don't need complex setups -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- Icons (So you don't have to install anything) ---
+        const WrenchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>;
+        const BookIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+        const LayersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg>;
+        const SettingsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+        const ExternalLinkIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>;
+        const ArrowRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
+
+        // --- Main App ---
+        function App() {
+            const [activeTab, setActiveTab] = useState('resources');
+
+            // THIS IS YOUR LIST OF LINKS. You can easily add more here later!
+            const resources = [
+                {
+                    title: "Parametric Token Generator",
+                    description: "Quickly generate custom tokens for any game. Highly customizable SCAD model.",
+                    url: "https://makerworld.com/en/makerlab/parametricModelMaker?scadUrl=https%3A%2F%2Fmakerworld.bblmw.com%2Fmakerworld%2Fmodel%2FUS6b1396b1a59372%2Fmsfile%2F2024-10-31_98ab4c49495668.scad%3Fat%3D1782039109%26exp%3D1782039409%26key%3D6db92223b2f3fe5ce899ab83403de797%26uid%3D3414024419&unikey=51074521-2b5f-43bb-93fc-7a58bbeb3444&designId=730393&modelName=TokenGenerator.scad",
+                    type: "SCAD Model",
+                    iconColor: "text-blue-500",
+                    Icon: SettingsIcon
+                },
+                {
+                    title: "Split Token Containers",
+                    description: "Parametric trays designed to hold multiple token types with easy-removal slopes.",
+                    url: "https://makerworld.com/en/makerlab/parametricModelMaker?scadUrl=https%3A%2F%2Fmakerworld.bblmw.com%2Fmakerworld%2Fmodel%2FUS8578c2bf9965a8%2Fmsfile%2F2025-07-05_aa8e62ca5db7b8.scad%3Fat%3D1782039358%26exp%3D1782039658%26key%3Dbd174e2ab00e9baa2102290ee1dc3016%26uid%3D3414024419&unikey=17859499-6e50-44ea-ad4e-245bb0a48ffc&designId=1577315&modelName=splitTokenTray.scad",
+                    type: "SCAD Model",
+                    iconColor: "text-green-500",
+                    Icon: LayersIcon
+                },
+                {
+                    title: "Round Token Protector (v3)",
+                    description: "Durable outer shells for round tokens (like Arkham Horror coin capsules).",
+                    url: "https://makerworld.com/en/makerlab/parametricModelMaker?unikey=05ddaff1-8772-44d5-80e4-7518b751ba5e&designId=615009&modelName=BoardGameTokenProtector%20v3.f3d&isFusion=true",
+                    type: "Fusion360",
+                    iconColor: "text-orange-500",
+                    Icon: SettingsIcon
+                },
+                {
+                    title: "Box Extender / Trove Topper",
+                    description: "Parametric box lifter for when your insert slightly exceeds the original box height.",
+                    url: "https://makerworld.com/en/makerlab/parametricModelMaker?unikey=cf4ca743-0098-4f68-83ae-1955018d65b9&designId=1662348&modelName=Lorcana-Trove-Topper%20v1.f3d&isFusion=true",
+                    type: "Fusion360",
+                    iconColor: "text-purple-500",
+                    Icon: ArrowRightIcon
+                }
+            ];
+
+            return (
+                <div className="max-w-5xl mx-auto p-6 space-y-6">
+                    {/* Header */}
+                    <div className="flex items-center space-x-4 mb-8">
+                        <div className="p-3 bg-blue-600 rounded-lg shadow-sm">
+                            <WrenchIcon />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900">Board Game Insert Studio</h1>
+                            <p className="text-gray-500">Your personal hub for 3D printing and designing game organizers</p>
+                        </div>
+                    </div>
+
+                    {/* Tabs Navigation */}
+                    <div className="grid w-full grid-cols-2 bg-gray-200 p-1 rounded-lg mb-6">
+                        <button 
+                            onClick={() => setActiveTab('resources')}
+                            className={`flex items-center justify-center py-2 text-lg font-medium rounded-md transition-all ${activeTab === 'resources' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                            <span className="mr-2"><BookIcon /></span> Resource Library
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('principles')}
+                            className={`flex items-center justify-center py-2 text-lg font-medium rounded-md transition-all ${activeTab === 'principles' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                            <span className="mr-2"><LayersIcon /></span> Design Principles
+                        </button>
+                    </div>
+
+                    {/* RESOURCES TAB */}
+                    {activeTab === 'resources' && (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {resources.map((res, idx) => (
+                                    <div key={idx} className="bg-white border rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+                                        <div className="flex items-center mb-2">
+                                            <div className="mr-4 p-2 bg-gray-100 rounded-full">
+                                                <div className={res.iconColor}><res.Icon /></div>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-semibold">{res.title}</h3>
+                                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{res.type}</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-gray-600 text-sm mb-4">{res.description}</p>
+                                        <a href={res.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full py-2 px-4 border border-blue-200 rounded-md text-blue-700 bg-white hover:bg-blue-50 transition-colors font-medium">
+                                            Open in MakerWorld <ExternalLinkIcon />
+                                        </a>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center">
+                                <div className="text-blue-600 mr-4"><BookIcon /></div>
+                                <p className="text-sm text-blue-800">
+                                    <strong>Tip:</strong> These MakerLab links let you customize parameters directly in your browser before downloading the final STL.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* PRINCIPLES TAB */}
+                    {activeTab === 'principles' && (
+                        <div className="bg-white border rounded-xl shadow-sm p-6">
+                            <h2 className="text-xl font-bold mb-6">Core Insert Design Principles</h2>
+                            <div className="space-y-6">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-2">
+                                        <span className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                                        Flush-Fit (The Shake Test)
+                                    </h3>
+                                    <p className="text-gray-600 pl-11">Inserts should reach the exact top of the box. If you turn it upside down, no tokens should escape.</p>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-2">
+                                        <span className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                                        Z-Height Management
+                                    </h3>
+                                    <p className="text-gray-600 pl-11">Measure the box's depth, subtract the rulebooks and boards. The remainder is your maximum tray height.</p>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-2">
+                                        <span className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">3</span>
+                                        Finger Gaps (Ergonomics)
+                                    </h3>
+                                    <p className="text-gray-600 pl-11">Tight trays need finger cutouts. Never design a card tray without a thumb cutout.</p>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-2">
+                                        <span className="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">4</span>
+                                        Fillets over Chamfers (For Tokens)
+                                    </h3>
+                                    <p className="text-gray-600 pl-11">The bottom inside edges of token trays should be filleted (curved) to easily slide tokens up.</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
